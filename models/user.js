@@ -18,6 +18,7 @@ userSchema.methods.encryptPassword = function(password){
 };
 
 userSchema.methods.validPassword = function(password){
+    console.log("Fallando en models/users");
     return bcrypt.compareSync(password, this.password);
 };
 
