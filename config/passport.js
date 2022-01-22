@@ -44,6 +44,7 @@ passport.use('local.signup',new LocalStrategy({
 	var newUser = new User();
 	newUser.email = email;
 	newUser.password = newUser.encryptPassword(password);
+	newUser.key = 1;
 	newUser.save(function(err, result){
 	    if(err){
 		return done(err);
@@ -92,6 +93,8 @@ passport.use('local.signin',new LocalStrategy({
 
 //Authenticating with FA authentication. 
 
+
+/*
 passport.use('totp-signup', new TotpStrategy ({
     usernameField: 'email',
     passwordField: 'password',
@@ -107,5 +110,4 @@ passport.use('totp-signup', new TotpStrategy ({
 	}
     });
 }));
-
-
+*/

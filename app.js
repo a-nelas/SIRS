@@ -9,6 +9,7 @@ var session = require('express-session');
 var passport = require('passport');
 var flash = require('connect-flash');
 var validator = require('express-validator');
+var MongoStore = require('connect-mongo');
 
 var routes = require('./routes/index');
 var userRoutes = require('./routes/user');
@@ -31,10 +32,15 @@ const mongo_client_options = {
 
 main().catch(err => console.log(err));
 
+let ClientP;
+
 async function main() {
-  await mongoose.connect(db_server_url, mongo_client_options);
+       ClientP = await mongoose.connect(
+	    db_server_url,
+	    mongo_client_options
+        ).then(m=>m.connection.getClient());
   console.log(`Esta viva!`);
-}
+};
 
 require('./config/passport');
 
@@ -49,11 +55,28 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(validator());
 app.use(cookieParser());
-app.use(session({secret: 'sirs', resave: false, saveUnitialized: false}));
+app.use(session({
+    secret: 'sirs',
+    resave: false,
+    saveUnitialized: false,
+    store: MongoStore.create({
+	clientPromise: ClientP,
+	dbName: db_name,
+	stringify: false
+    }),
+    cookie: { maxAge: 120 * 60 * 1000  } //120 minutos and the sessions will expire. 
+}));
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+app.use(function(req, res, next){
+    res.locals.login = req.isAuthenticated();
+    res.locals.session = req.session; 
+    next();
+});
 
 app.use('/user', userRoutes);
 app.use('/', routes);
@@ -68,7 +91,7 @@ app.use(function(req, res, next) {
 
 // error handlers
 
-// development error handler
+// develoment error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {

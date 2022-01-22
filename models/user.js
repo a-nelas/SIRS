@@ -5,7 +5,8 @@ var Schema = mongoose.Schema;
 
 var userSchema = new Schema({
     email: {type: String, required: true},
-    password: {type: String, required: true}
+    password: {type: String, required: true},
+    key: {type: String, required: true}
 });
 
 
@@ -18,8 +19,19 @@ userSchema.methods.encryptPassword = function(password){
 };
 
 userSchema.methods.validPassword = function(password){
-    console.log("Fallando en models/users");
     return bcrypt.compareSync(password, this.password);
 };
 
+
+//Creating methods for encrypting the hash for the 2FA Authentication.
+
+userSchema.methods.encrypt2FA = function(key){
+    return bcrypt.hashSync(key, bcrypt.genSaltSync(5), null);
+};
+
+userSchema.methods.decrypt2FA = function(key){
+    return bcrypt.compareSync(key, this.key);
+};
+
 module.exports = mongoose.model('User', userSchema);
+
