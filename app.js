@@ -53,7 +53,7 @@ main().catch(err => console.log(err));
 
 async function main() {
     await mongoose.connect(db_server_url, mongo_client_options);
-  console.log(`Esta viva!`);
+  console.log(`MongoDB connected through SSL`);
 };
 
 require('./config/passport');
