@@ -10,16 +10,31 @@ var passport = require('passport');
 var flash = require('connect-flash');
 var validator = require('express-validator');
 var MongoStore = require('connect-mongo')(session);
-
 var routes = require('./routes/index');
 var userRoutes = require('./routes/user');
+var https = require('https');
+var fs = require('fs');
+
+
+//Certificate and Key for HTTPS
+
+const key = fs.readFileSync(`${__dirname}/keys/https/merchant.pem`);
+const cert = fs.readFileSync(`${__dirname}/keys/https/cert.pem`);
+
+// Initializing the Express App. 
 
 var app = express();
 
+//HTTPS connection
 
-
-
-
+var httpsServer = https.createServer({key, cert}, app);
+httpsServer.on('error', function(e){
+    console.log(e);
+});
+httpsServer.listen(443, '192.168.0.10', () => {
+    console.log("HTTPS Server enabled and running");
+});
+			      
 //MongoDB SSL Connection.
 const db_server_ip = '192.168.0.100'
 const db_server_port = '27017'
