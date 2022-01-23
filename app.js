@@ -9,12 +9,16 @@ var session = require('express-session');
 var passport = require('passport');
 var flash = require('connect-flash');
 var validator = require('express-validator');
-var MongoStore = require('connect-mongo');
+var MongoStore = require('connect-mongo')(session);
 
 var routes = require('./routes/index');
 var userRoutes = require('./routes/user');
 
 var app = express();
+
+
+
+
 
 //MongoDB SSL Connection.
 const db_server_ip = '192.168.0.100'
@@ -32,13 +36,8 @@ const mongo_client_options = {
 
 main().catch(err => console.log(err));
 
-let ClientP;
-
 async function main() {
-       ClientP = await mongoose.connect(
-	    db_server_url,
-	    mongo_client_options
-        ).then(m=>m.connection.getClient());
+    await mongoose.connect(db_server_url, mongo_client_options);
   console.log(`Esta viva!`);
 };
 
@@ -55,15 +54,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(validator());
 app.use(cookieParser());
+
 app.use(session({
     secret: 'sirs',
     resave: false,
     saveUnitialized: false,
-    store: MongoStore.create({
-	clientPromise: ClientP,
-	dbName: db_name,
-	stringify: false
-    }),
+    store: new MongoStore({mongooseConnection: mongoose.connection}),
     cookie: { maxAge: 120 * 60 * 1000  } //120 minutos and the sessions will expire. 
 }));
 app.use(flash());

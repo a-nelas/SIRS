@@ -1,7 +1,8 @@
 var express = require('express');
-var router = express.Router();
-var passport = require('passport');
 
+var router = express.Router();
+
+var passport = require('passport');
 var Product = require('../models/product');
 var Cart = require('../models/cart');
 
@@ -18,19 +19,18 @@ router.get('/', function(req, res, next) {
 });
 
 
-router.get('/add-to-cart/:id',function(res, req, next){
+router.get('/add-to-cart/:id', function(req, res, next) {
     var productId = req.params.id;
-    var cart = new Cart(req.session.cart ? req.session.cart : {});
+    var cart = new Cart(req.session.cart ? req.session.cart : { items: {}});
 
-    Product.findById(productId, function(req, res, next){
-	if(err){
-	    console.log(err);
-	    return res.redirect('/');
-	}
-	cart.addProducts(product, product.id);
-	req.session.cart = cart;
-	console.log(req.session.cart);
-	res.redirect('/');
+    Product.findById(productId, function(err, product) {
+       if (err) {
+           return res.redirect('/');
+       }
+        cart.addProducts(product, product.id);
+        req.session.cart = cart;
+        console.log(req.session.cart);
+        res.redirect('/');
     });
 });
 
