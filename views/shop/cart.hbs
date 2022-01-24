@@ -1,0 +1,26 @@
+{{# if products}}
+
+<div class="row">
+     <div class="col-sm-6 col-md-6 com-md-offset-3 col-sm-offset-3">
+     <ul class="list-group">
+     {{#each products}}
+     <li class="list-group-item">
+     {{this.qty}}
+     {{this.item.title}}
+     ${{this.price}}
+     </li>
+     {{/each}}
+     </ul>
+     Total Price: {{this.totalPrice}}
+     <a href="/checkout" class="btn btn-success pull-right" role="button">Payment</a>
+     </div> 
+</div> 
+
+{{else}}
+
+
+
+<p>There are no products in the shopping cart, waste your money please</p> 
+
+
+{{/if}}
