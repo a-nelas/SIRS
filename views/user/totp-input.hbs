@@ -1,0 +1,8 @@
+<div id="content">
+        <h3>Enter the code from your Google Authenticator App</h3>
+        <form action="/user/totp-input" method="post">
+	    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <input type="password" name="code" placeholer="Generated Code}">
+            <input type="submit">
+        </form>
+    </div>

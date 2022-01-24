@@ -28,6 +28,7 @@
     "passport": "^0.5.2",
     "passport-2fa-totp": "^0.0.1",
     "passport-local": "^1.0.0",
+    "passport-totp": "^0.0.2",
     "sprintf": "^0.1.5",
     "thirty-two": "^1.0.2"
   }

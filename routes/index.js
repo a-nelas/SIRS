@@ -52,4 +52,5 @@ router.get('/checkout', function(req, res, next){
     res.render('shop/checkout', {total: cart.totalPrice});
 });
 
+
 module.exports = router;

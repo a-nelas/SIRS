@@ -1,0 +1,29 @@
+<div id="content">
+  <h3>Welcome {{user.email}}</h3>  
+  <h4>You have not enabled the 2FA. Please scan the QR using Google Authenticator to register your account</h4>
+  {{# if user.key}}
+      <form action="/user/totp-setup" method="post">
+      	<input type="hidden" name="_csrf" value="{{ csrfToken }}">    
+	<input type="checkbox" name="totp" checked onchange="this.form.submit()">
+    </form>
+    <h4>{{strings.qrSetupSteps}}</h4>
+    <img src="{{qrUrl}}" alt="{{ user.key }}">
+  {{else}}
+   <form action="/user/totp-setup" method="post">
+      <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+      <input type="checkbox" name="totp" onchange="this.form.submit()">
+   </form>
+  {{/if}}
+<a href="/" class="btn btn-success pull-left" role="button">Continue</a>
+</div>
+
+
+
+<div id="content">
+        <h3>Enter the code from your Google Authenticator App</h3>
+        <form action="/user/totp-input" method="post">
+	    <input type="hidden" name="_csrf" value="{{ csrfToken }}">
+            <input type="password" name="code" placeholer="Generated Code}">
+            <input type="submit">
+        </form>
+    </div>

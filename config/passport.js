@@ -1,9 +1,8 @@
 var passport = require('passport');
 var User = require('../models/user');
 var LocalStrategy = require('passport-local').Strategy;
-var TotpStrategy = require('passport-2fa-totp').Strategy;
-var GoogleAuthenticator = require('passport-2fa-totp').GoogeAuthenticator //For some reason, it is Googe and not Google. 
-
+var TotpStrategy = require('passport-totp').Strategy;
+var base32 = require('thirty-two');
 
 passport.serializeUser(function(user, done){
     done(null, user.id); 
@@ -91,21 +90,16 @@ passport.use('local.signin',new LocalStrategy({
 
 //Authenticating with FA authentication. 
 
-
-/*
-passport.use('totp-signup', new TotpStrategy ({
-    usernameField: 'email',
-    passwordField: 'password',
-    passReqToCallback: true
-},function(req, email, password, done){
-    User.findOne({'email': email}, function(err, user){
-	console.log("Imprimiendo el usuario");
-	console.log(user)
-	if(!(user.decrypt2FA(user.key))){
-	    returne done(null, false, {messages: "There is no key"});
-	}else{
-	    return done(null, base32.decode(user.decrypt2FA(user.key)), 30);
-	}
-    });
-}));
-*/
+passport.use(new TotpStrategy(
+    function(user, done) {
+        var key = user.key;
+	console.log("Passport-config: "+user)
+        if(!key) {
+	    console.log("No Key");
+            return done(new Error('No key'));
+        } else {
+	    console.log("There is a key");
+            return done(null, base32.decode(key), 30); //30 = valid key period
+        }
+    })
+);
