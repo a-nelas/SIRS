@@ -21,10 +21,12 @@
     "hbs": "^4.2.0",
     "http-errors": "~1.6.3",
     "https": "^1.0.0",
+    "messagebird": "^3.7.2",
     "mongoose": "^6.1.6",
     "morgan": "~1.9.1",
     "passport": "^0.5.2",
     "passport-2fa-totp": "^0.0.1",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "thirty-two": "^1.0.2"
   }
 }

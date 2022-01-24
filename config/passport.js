@@ -44,7 +44,7 @@ passport.use('local.signup',new LocalStrategy({
 	var newUser = new User();
 	newUser.email = email;
 	newUser.password = newUser.encryptPassword(password);
-	newUser.key = 1;
+	newUser.key = "";
 	newUser.save(function(err, result){
 	    if(err){
 		return done(err);
@@ -82,9 +82,7 @@ passport.use('local.signin',new LocalStrategy({
         if(!user){
             return done(null, false, {message: 'The user is not registered'});
         }
-	console.log("Aqui andamos");
 	if(!user.validPassword(password)){
-	    console.log("Ahora andamos dentro del if");
 	    return done(null, false, {mesages: 'The password is not matching'});
 	}
 	return done(null, user);
