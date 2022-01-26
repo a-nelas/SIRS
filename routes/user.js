@@ -74,7 +74,7 @@ router.post('/totp-setup', isLoggedIn, ensureTotp, csrfProtection, function(req,
 	if(user){
 	    if(req.body.totp) {
 		req.session.method = 'totp';
-		var secret = base32.encode(crypto.randomBytes(16));  //This is important, since there CAN NOT be two same secrets.
+		var secret = base32.encode(crypto.randomBytes(16));  .
 		secret = secret.toString().replace(/=/g, '');
 		req.user.key = secret;
 		user.key = secret;

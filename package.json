@@ -20,6 +20,7 @@
     "express-validator": "^5.3.0",
     "fs": "^0.0.1-security",
     "hbs": "^4.2.0",
+    "http": "^0.0.1-security",
     "http-errors": "~1.6.3",
     "https": "^1.0.0",
     "messagebird": "^3.7.2",
@@ -30,6 +31,7 @@
     "passport-local": "^1.0.0",
     "passport-totp": "^0.0.2",
     "sprintf": "^0.1.5",
-    "thirty-two": "^1.0.2"
+    "thirty-two": "^1.0.2",
+    "util": "^0.12.4"
   }
 }
