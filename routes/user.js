@@ -57,6 +57,7 @@ router.get('/totp-setup', isLoggedIn, ensureTotp,  csrfProtection,  function(req
 	    if(testKey){
 		var qrData = sprintf('otpauth://totp/%s?secret=%s',req.user.email,testKey);
 		url = "https://chart.googleapis.com/chart?chs=166x166&chld=L|0&cht=qr&chl=" + qrData;
+	
 	    }
 	    res.render('user/totp-setup', {csrfToken: req.csrfToken(), user:req.user, qrUrl: url});
 	}
@@ -125,8 +126,6 @@ function(req, res, next){
             console.log(err);
             return res.write("Error!");
         }
-	console.log("I am at Post method of the /signin endpoint");
-	console.log("Printing status of user in POST of signin: "+user);
 	if(user){
 	    if(user.key){
 		req.session.method = 'totp';

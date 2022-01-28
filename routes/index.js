@@ -10,6 +10,7 @@ var http = require('http')
 var fs = require('fs');
 const { check, validationResult } = require('express-validator');
 
+
 /* GET home page. */
 router.get('/', function(req, res, next) {
     Product.find(function(err, docs){
@@ -33,7 +34,6 @@ router.get('/add-to-cart/:id', function(req, res, next) {
        }
         cart.addProducts(product, product.id);
         req.session.cart = cart;
-        console.log(req.session.cart);
         res.redirect('/');
     });
 });
@@ -48,23 +48,20 @@ router.get('/cart', function(req, res, next){
 });
 
 
+
 router.get('/checkout', function(req, res, next){
     if(!req.session.cart){
 	return res.redirect('/cart');
     }
     var cart = new Cart(req.session.cart); 
     var messages = req.flash('error');
-    console.log('Errores')
-    console.log(req.flash('error'))
-    console.log(message.length)
     res.render('shop/checkout', {total: cart.totalPrice, messages: messages, isError: messages.length > 0});
 });
 
-router.post('/checkout', verifyData , function(req, res, next){
+router.post('/checkout', isLoggedIn, verifyData , function(req, res, next){
     if (!req.session.cart) {
         return res.redirect('/cart');
     }
-    
     var cart = new Cart(req.session.cart);
     var phone = req.body.phone;
     var address = req.body.address;
@@ -84,62 +81,69 @@ router.post('/checkout', verifyData , function(req, res, next){
 	"totalPrice": totalPrice,
 	"uuid": uuid
     };
-    console.log("Obj: "+obj);
     const dataTransaction = JSON.stringify(obj);
-    console.log("JSON: "+dataTransaction);
-    const data = new TextEncoder().encode(dataTransaction)
+    const data = new TextEncoder().encode(dataTransaction);
     const options = {
 	hostname: '192.168.1.50',
-	port: 3000,
+	port: 5000,
 	path: '/transactions',
 	method: 'POST',
 	key: fs.readFileSync('/home/osboxes/Documents/Proyecto/MerchantSIRS/keys/https/merchant.pem'),
 	cert: fs.readFileSync('/home/osboxes/Documents/Proyecto/MerchantSIRS/keys/https/cert.pem'),
+	rejectUnauthorized: false,
+	//requestCert: true,
+	//agent: false,
 	headers: {
 	    'Content-Type': 'application/json',
 	    'Content-Length': data.length
 	}
-    }
-
+    };
     const request = http.request(options, res => {
-	console.log(`statusCode: ${res.statusCode}`);
-
 	res.on('data', d => {
-	    console.log("res.on: "+d)
-	    
+	    console.log("res.on: "+d);
 	    process.stdout.write(d);
 	});
     });
-
     request.on('error', error => {
 	console.error(error);
-    })
+    });
     
-    request.write(data)
-    request.end()
+    request.write(data);
+    request.end();
+
 });
+
+
 
 module.exports = router;
 
 function verifyData(req, res, next){
+    
     req.checkBody('phone', 'Invalid email, use a correct email').notEmpty().isMobilePhone();
-    req.checkBody('cardname', 'Invalid Card Number').notEmpty().matches(/^[A-Za-z\s]+$/)
-    req.checkBody('cardnumber', 'Invalid Card name').isCreditCard()
-    req.checkBody('cardcvc', 'Invalid CVC').isInt().isLength({max: 3})
-    req.checkBody('card-expiry-month', 'Invalid Month').isInt().isLength({max: 2})
-    req.checkBody('card-expiry-year', 'Invalid Month').isInt().isLength({max: 4})
+    req.checkBody('cardname', 'Invalid Card Number').notEmpty().matches(/^[A-Za-z\s]+$/);
+    req.checkBody('cardnumber', 'Invalid Card name').notEmpty().isNumeric();
+    req.checkBody('cardcvc', 'Invalid CVC').isInt().isLength({max: 3});
+    req.checkBody('card-expiry-month', 'Invalid Month').isInt().isLength({max: 2});
+    req.checkBody('card-expiry-year', 'Invalid Month').isInt().isLength({max: 4});
     
     var errors = req.validationErrors();
     if(errors){
 	var messages = [];
 	errors.forEach(function(error){
             messages.push(error.msg);
+	    
 	});
-	req.flash('error', messages)
-	console.log('Input errors')
-	console.log(req.flash('error'))
+	console.log(messages);
 	res.redirect("/checkout");
     }
-    return next 
+    return next();
 }
+
+function isLoggedIn(req, res, next){
+    if(req.isAuthenticated()){
+	return next();
+    }
+    res.redirect('/');
+}
+
 
