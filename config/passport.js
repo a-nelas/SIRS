@@ -21,7 +21,13 @@ passport.use('local.signup',new LocalStrategy({
     passReqToCallback: true
 }, function(req, email, password, done){
     req.checkBody('email', 'Invalid email, use a correct email').notEmpty().isEmail();
-    req.checkBody('password','Invalid password').notEmpty().isLength({min: 4});
+    req.checkBody('password','Invalid password').notEmpty().isStrongPassword({
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1
+    })
+    .withMessage("Password must be greater than 8 and contain at least one uppercase letter, one lowercase letter, and one number");
 
     var errors = req.validationErrors();
     if(errors){

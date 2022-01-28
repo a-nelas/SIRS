@@ -21,9 +21,9 @@ router.get('/logout', isLoggedIn,  function(req, res, next){
 });
 
 
-router.get('/totp-input', isLoggedIn, csrfProtection, function(req, res){
+router.get('/totp-input', isLoggedIn, csrfProtection, function(req, res, next){
 
-    User.findOne({'email':req.user.email}, function(err, user){
+    User.findOne({'email':req.user.email}, function(err, user, next){
 	if(err){
             console.log(err);
             return res.write("Error!");
@@ -46,7 +46,7 @@ router.post('/totp-input', isLoggedIn, csrfProtection, passport.authenticate('to
 
 router.get('/totp-setup', isLoggedIn, ensureTotp,  csrfProtection,  function(req, res, next){
 
-    User.findOne({'email':req.user.email}, function(err, user){
+    User.findOne({'email':req.user.email}, function(err, user, next){
         if(err){
             console.log(err);
             return res.write("Error!");

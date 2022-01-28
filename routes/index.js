@@ -8,7 +8,7 @@ var Cart = require('../models/cart');
 var https = require('https');
 var http = require('http')
 var fs = require('fs');
-
+const { check, validationResult } = require('express-validator');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -52,18 +52,21 @@ router.get('/checkout', function(req, res, next){
     if(!req.session.cart){
 	return res.redirect('/cart');
     }
-    var cart = new Cart(req.session.cart);
-    errors 
-    res.render('shop/checkout', {total: cart.totalPrice});
+    var cart = new Cart(req.session.cart); 
+    var messages = req.flash('error');
+    console.log('Errores')
+    console.log(req.flash('error'))
+    console.log(message.length)
+    res.render('shop/checkout', {total: cart.totalPrice, messages: messages, isError: messages.length > 0});
 });
 
-router.post('/checkout', function(req, res, next){
+router.post('/checkout', verifyData , function(req, res, next){
     if (!req.session.cart) {
         return res.redirect('/cart');
     }
+    
     var cart = new Cart(req.session.cart);
-    console.log(req.body);
-    var name = req.body.name;
+    var phone = req.body.phone;
     var address = req.body.address;
     var cardname = req.body.cardname;
     var tmp1 = req.body.cardnumber; //For some reason bcrypt function does not accept the parameters with a dot inside it. 
@@ -74,9 +77,10 @@ router.post('/checkout', function(req, res, next){
     var uuid = bcrypt.hashSync(tmp3, bcrypt.genSaltSync(5), null);
     var totalPrice = cart.totalPrice;
     var obj = {
-	"card":creditCardNumber,
+	"creditcard":creditCardNumber,
 	"cv":cvc,
-	"name":name,
+	"phone":phone,
+	"cardname": cardname,
 	"totalPrice": totalPrice,
 	"uuid": uuid
     };
@@ -84,11 +88,10 @@ router.post('/checkout', function(req, res, next){
     const dataTransaction = JSON.stringify(obj);
     console.log("JSON: "+dataTransaction);
     const data = new TextEncoder().encode(dataTransaction)
-
     const options = {
-	hostname: '192.168.0.100',
+	hostname: '192.168.1.50',
 	port: 3000,
-	path: '/quarks',
+	path: '/transactions',
 	method: 'POST',
 	key: fs.readFileSync('/home/osboxes/Documents/Proyecto/MerchantSIRS/keys/https/merchant.pem'),
 	cert: fs.readFileSync('/home/osboxes/Documents/Proyecto/MerchantSIRS/keys/https/cert.pem'),
@@ -97,11 +100,13 @@ router.post('/checkout', function(req, res, next){
 	    'Content-Length': data.length
 	}
     }
+
     const request = http.request(options, res => {
 	console.log(`statusCode: ${res.statusCode}`);
 
 	res.on('data', d => {
 	    console.log("res.on: "+d)
+	    
 	    process.stdout.write(d);
 	});
     });
@@ -115,3 +120,26 @@ router.post('/checkout', function(req, res, next){
 });
 
 module.exports = router;
+
+function verifyData(req, res, next){
+    req.checkBody('phone', 'Invalid email, use a correct email').notEmpty().isMobilePhone();
+    req.checkBody('cardname', 'Invalid Card Number').notEmpty().matches(/^[A-Za-z\s]+$/)
+    req.checkBody('cardnumber', 'Invalid Card name').isCreditCard()
+    req.checkBody('cardcvc', 'Invalid CVC').isInt().isLength({max: 3})
+    req.checkBody('card-expiry-month', 'Invalid Month').isInt().isLength({max: 2})
+    req.checkBody('card-expiry-year', 'Invalid Month').isInt().isLength({max: 4})
+    
+    var errors = req.validationErrors();
+    if(errors){
+	var messages = [];
+	errors.forEach(function(error){
+            messages.push(error.msg);
+	});
+	req.flash('error', messages)
+	console.log('Input errors')
+	console.log(req.flash('error'))
+	res.redirect("/checkout");
+    }
+    return next 
+}
+
